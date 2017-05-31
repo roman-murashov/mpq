@@ -1,2 +1,2 @@
 # mpq
-Unpacking of Diablo 1 mpq files 
+The program mpq is used for unpacking Diablo 1 mpq files
