@@ -37,17 +37,15 @@ func decompress(data []byte) (out []byte) {
 			// Shift one bit extra in the switch statments below
 
 			// Old Code
-			// bitBuf >>= 1
-			// bitsInBuf -= 1
-			//
-			// for i = 0; i <= 0x0F; i++ {
-			// 	   if ((bitBuf) & ((1 << (s_LenBits[i])) - 1)) == uint32(s_LenCode[i]) {
-			// 		   break
-			//     }
-			// }
-			//
-			// bitBuf >>= s_LenBits[i]
-			// bitsInBuf -= uint(s_LenBits[i])
+			//bitBuf >>= 1
+			//bitsInBuf -= 1
+			//for i = 0; i <= 0x0F; i++ {
+			//	if bitBuf&(1<<s_LenBits[i]-1) == uint32(s_LenCode[i]) {
+			//		break
+			//	}
+			//}
+			//bitBuf >>= s_LenBits[i]
+			//bitsInBuf -= uint(s_LenBits[i])
 
 			// Use 2 bits and skip 1 bit from Literal byte check
 			if bitBuf&0x06 == 0x06 {
@@ -152,7 +150,7 @@ func decompress(data []byte) (out []byte) {
 
 		setCopyLen:
 			// ###TODO### potential gain of unpacking shift, and setting copy_len is 225ms for diabdat.mpq
-			copy_len := s_LenBase[i] + ((bitBuf) & ((1 << (s_ExLenBits[i])) - 1))
+			copy_len := s_LenBase[i] + bitBuf&(1<<s_ExLenBits[i]-1)
 			bitBuf >>= s_ExLenBits[i]
 			bitsInBuf -= s_ExLenBits[i]
 
@@ -170,7 +168,7 @@ func decompress(data []byte) (out []byte) {
 			// Old version
 			// Find most significant 6 bits of offset into the dictionary
 			//for i = 0; i <= 0x3f; i++ {
-			//	if ((bitBuf) & ((1 << (s_OffsBits[i])) - 1)) == uint32(s_OffsCode[i]) {
+			//if bitBuf&((1<<s_OffsBits[i])-1) == uint32(s_OffsCode[i]) {
 			//		break
 			//	}
 			//}
@@ -506,11 +504,11 @@ func decompress(data []byte) (out []byte) {
 
 		setCopyOff:
 			if copy_len == 2 {
-				copy_off = outIndex - 1 - ((i << 2) + (bitBuf & 0x03))
+				copy_off = outIndex - 1 - (i<<2 + bitBuf&0x03)
 				bitBuf >>= 2
 				bitsInBuf -= 2
 			} else {
-				copy_off = outIndex - 1 - ((i << 6) + (bitBuf & 0x3F))
+				copy_off = outIndex - 1 - (i<<6 + bitBuf&0x3F)
 				bitBuf >>= 6
 				bitsInBuf -= 6
 			}
