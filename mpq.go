@@ -12,9 +12,13 @@ import (
 	"sync"
 )
 
+// Output directory.
+var outDir string
+
 func main() {
 	var cpuprofile = flag.String("c", "", "Write cpu profile to file")
 	var mpqFile = flag.String("m", "diabdat.mpq", "Path to Diablo 1 mpq")
+	flag.StringVar(&outDir, "dir", "diabdat", "Output directory")
 	flag.Parse()
 
 	if *cpuprofile != "" {
@@ -232,13 +236,13 @@ func HashString(FileName string, HashType uint32) uint32 {
 func createFile(fileName string) (file *os.File) {
 	// Make fileName in to a path that works on the current OS
 	fileName = strings.Replace(".\\"+fileName, "\\", string(os.PathSeparator), -1)
-
-	err := os.MkdirAll(filepath.Dir(fileName), os.ModePerm)
+	path := filepath.Join(outDir, fileName)
+	err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	file, err = os.Create(fileName)
+	file, err = os.Create(path)
 	if err != nil {
 		log.Fatalln(err)
 	}
